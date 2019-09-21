@@ -7,6 +7,7 @@ from .vgg import vgg_encoders
 from .senet import senet_encoders
 from .densenet import densenet_encoders
 from .inceptionresnetv2 import inception_encoders
+from .efficientnet import efficientnet_encoders
 
 from ._preprocessing import preprocess_input
 
@@ -17,6 +18,7 @@ encoders.update(vgg_encoders)
 encoders.update(senet_encoders)
 encoders.update(densenet_encoders)
 encoders.update(inception_encoders)
+encoders.update(efficientnet_encoders)
 
 
 def get_encoder(name, encoder_weights=None):
@@ -26,8 +28,8 @@ def get_encoder(name, encoder_weights=None):
 
     if encoder_weights is not None:
         settings = encoders[name]['pretrained_settings'][encoder_weights]
-        encoder.load_state_dict(model_zoo.load_url(settings['url']))
-
+        r = encoder.load_state_dict(model_zoo.load_url(settings['url']))
+        print(f'Load result: {r}')
     return encoder
 
 
@@ -40,7 +42,7 @@ def get_preprocessing_params(encoder_name, pretrained='imagenet'):
 
     if pretrained not in settings.keys():
         raise ValueError('Avaliable pretrained options {}'.format(settings.keys()))
-    
+
     formatted_settings = {}
     formatted_settings['input_space'] = settings[pretrained].get('input_space')
     formatted_settings['input_range'] = settings[pretrained].get('input_range')
