@@ -106,6 +106,17 @@ class EfficientNetEncoder(nn.Module):
         blocks_args = BlockDecoder.decode(blocks_args)
         return blocks_args
 
+    def info(self):
+        msg = '== EfficientNetEncoder ==\n\n'
+        msg += 'x0: conv_stem\n'
+        chunks = zip(self.block_chunks[:-1], self.block_chunks[1:])
+        for i, (start, end) in enumerate(chunks):
+            msg += f'x{i+1}: blocks[{start}:{end}]\n'
+        msg += '\n'
+        msg += f'Out shapes (x4, x3, x2, x1, x0): {self._out_shapes}\n'
+        msg += str(self._global_params)
+        print(msg)
+
 
 url_map = {
     'efficientnet-b0': 'http://storage.googleapis.com/public-models/efficientnet/efficientnet-b0-355c32eb.pth',
@@ -312,22 +323,6 @@ efficientnet_encoders = {
     },
 }
 
-# b0: 1, 3, 5, 11  # /15
-# 'block_chunks': [0, 2, 5, 11, 16]
-# b1: 2, 5, 8, 16  # /22
-# 'block_chunks': [0, 3, 8, 16, 22]
-# b2: 2, 5, 8, 16  # /22
-# 'block_chunks': [0, 3, 8, 16, 22]
-# b3: 2, 5, 8, 18, # /25
-# 'block_chunks': [0, 3, 8, 18, 25]
-# b4: 2, 6, 10, 22  # /31
-# 'block_chunks': [0, 5, 10, 22, 31]
-# b5: 3, 8, 13, 27  # /38
-# 'block_chunks': [0, 6, 13, 27, 38]
-# b6: 3, 9, 15, 31  # /44
-# 'block_chunks': [0, 7, 15, 31, 44]
-# b7: 4, 11, 18, 38 # /54
-# 'block_chunks': [0, 9, 18, 38, 44]
 
 class MBConvBlock(nn.Module):
     """
