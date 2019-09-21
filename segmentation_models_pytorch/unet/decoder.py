@@ -23,10 +23,14 @@ class DecoderBlock(nn.Module):
 
     def forward(self, x):
         x, skip = x
-        x = F.interpolate(x, scale_factor=2, mode='nearest')
+
         if skip is not None:
+            skipsize = skip.shape[-1]
+            x = F.interpolate(x, size=skipsize, mode='nearest')
             x = torch.cat([x, skip], dim=1)
             x = self.attention1(x)
+        else:
+            x = F.interpolate(x, scale_factor=2, mode='nearest')
 
         x = self.block(x)
         x = self.attention2(x)
