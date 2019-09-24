@@ -25,7 +25,7 @@ class DecoderBlock(nn.Module):
         x, skip = x
 
         if skip is not None:
-            skipsize = skip.shape[-1]
+            skipsize = (skip.shape[-2], skip.shape[-1])
             x = F.interpolate(x, size=skipsize, mode='nearest')
             x = torch.cat([x, skip], dim=1)
             x = self.attention1(x)
