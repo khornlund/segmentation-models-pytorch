@@ -21,9 +21,9 @@ encoders.update(inception_encoders)
 encoders.update(efficientnet_encoders)
 
 
-def get_encoder(name, encoder_weights=None):
+def get_encoder(name, encoder_weights=None, in_channels=3):
     Encoder = encoders[name]['encoder']
-    encoder = Encoder(**encoders[name]['params'])
+    encoder = Encoder(in_channels=in_channels, **encoders[name]['params'])
     encoder.out_shapes = encoders[name]['out_shapes']
 
     if encoder_weights is not None:

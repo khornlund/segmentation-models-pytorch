@@ -9,6 +9,8 @@ from torch import nn
 from torch.nn import functional as F
 from torch.utils import model_zoo
 
+from segmentation_models_pytorch.common.weights import cycle_rgb_weights
+
 
 class EfficientNetEncoder(nn.Module):
     """
@@ -21,13 +23,15 @@ class EfficientNetEncoder(nn.Module):
         image_size,
         dropout_rate,
         drop_connect_rate,
-        block_chunks
+        block_chunks,
+        in_channels = 3  # rgb
     ):
         super().__init__()
         self._blocks_args = self.get_block_args()
         self._global_params = get_global_params(width_coeff, depth_coeff, image_size,
                                                 dropout_rate, drop_connect_rate)
         self.block_chunks = block_chunks
+        self.in_channels = in_channels
 
         # Get static or dynamic convolution depending on image size
         Conv2d = get_same_padding_conv2d(image_size=self._global_params.image_size)
@@ -37,9 +41,8 @@ class EfficientNetEncoder(nn.Module):
         bn_eps = self._global_params.batch_norm_epsilon
 
         # Stem
-        in_channels = 3  # rgb
         out_channels = round_filters(32, self._global_params)  # number of output channels
-        self._conv_stem = Conv2d(in_channels, out_channels, kernel_size=3, stride=2, bias=False)
+        self._conv_stem = Conv2d(self.in_channels, out_channels, kernel_size=3, stride=2, bias=False)
         self._bn0 = nn.BatchNorm2d(num_features=out_channels, momentum=bn_mom, eps=bn_eps)
 
         # Build blocks
@@ -91,7 +94,17 @@ class EfficientNetEncoder(nn.Module):
         state_dict.pop('_bn1.num_batches_tracked')
         state_dict.pop('_fc.bias')
         state_dict.pop('_fc.weight')
+
+        if self.in_channels != 3:
+            state_dict = self.modify_in_channel_weights(state_dict, self.in_channels)
+
         super().load_state_dict(state_dict, **kwargs)
+
+    def modify_in_channel_weights(self, state_dict, in_channels):
+        pretrained = state_dict['_conv_stem.weight']
+        cycled_weights = cycle_rgb_weights(pretrained, in_channels)
+        state_dict['_conv_stem.weight'] = cycled_weights
+        return state_dict
 
     def get_block_args(self):
         blocks_args = [

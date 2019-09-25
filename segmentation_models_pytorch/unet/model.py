@@ -37,11 +37,13 @@ class Unet(EncoderDecoder):
             classes=1,
             activation='sigmoid',
             center=False,  # usefull for VGG models
-            attention_type=None
+            attention_type=None,
+            in_channels=3
     ):
         encoder = get_encoder(
             encoder_name,
-            encoder_weights=encoder_weights
+            encoder_weights=encoder_weights,
+            in_channels=in_channels
         )
 
         decoder = UnetDecoder(
