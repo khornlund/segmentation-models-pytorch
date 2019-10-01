@@ -18,7 +18,7 @@ class DecoderBlock(nn.Module):
             self.attention1 = SCSEModule(in_channels)
             self.attention2 = SCSEModule(out_channels)
 
-        self.dropout = nn.Dropout(p=dropout, inplace=True)
+        self.dropout = nn.Dropout(p=dropout, inplace=False)
 
         self.block = nn.Sequential(
             Conv2dReLU(in_channels, out_channels, kernel_size=3, padding=1, use_batchnorm=use_batchnorm),
