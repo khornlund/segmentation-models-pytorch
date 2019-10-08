@@ -33,10 +33,12 @@ class FPN(EncoderDecoder):
             classes=1,
             dropout=0.2,
             activation='sigmoid',
+            in_channels=3,
     ):
         encoder = get_encoder(
             encoder_name,
-            encoder_weights=encoder_weights
+            encoder_weights=encoder_weights,
+            in_channels=in_channels
         )
 
         decoder = FPNDecoder(
