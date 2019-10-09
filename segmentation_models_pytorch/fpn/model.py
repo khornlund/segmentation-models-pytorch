@@ -34,6 +34,7 @@ class FPN(EncoderDecoder):
             dropout=0.2,
             activation='sigmoid',
             in_channels=3,
+            weight_std=False
     ):
         encoder = get_encoder(
             encoder_name,
@@ -47,6 +48,7 @@ class FPN(EncoderDecoder):
             segmentation_channels=decoder_segmentation_channels,
             final_channels=classes,
             dropout=dropout,
+            weight_std=weight_std
         )
 
         super().__init__(encoder, decoder, activation)

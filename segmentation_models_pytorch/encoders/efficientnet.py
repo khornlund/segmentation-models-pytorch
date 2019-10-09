@@ -10,7 +10,7 @@ from torch.nn import functional as F
 from torch.utils import model_zoo
 
 from segmentation_models_pytorch.common.weights import cycle_rgb_weights
-
+from segmentation_models_pytorch.common.activations import Swish
 
 class EfficientNetEncoder(nn.Module):
     """
@@ -439,9 +439,7 @@ GlobalParams.__new__.__defaults__ = (None,) * len(GlobalParams._fields)
 BlockArgs.__new__.__defaults__ = (None,) * len(BlockArgs._fields)
 
 
-def relu_fn(x):
-    """ Swish activation function """
-    return x * torch.sigmoid(x)
+def relu_fn = Swish()
 
 
 def round_filters(filters, global_params):
