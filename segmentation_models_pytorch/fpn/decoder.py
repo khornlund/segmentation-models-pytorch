@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from ..base.model import Model
+from ..common.activations import Swish
 
 
 class Conv2dWS(nn.Conv2d):
@@ -23,12 +24,19 @@ class Conv2dWS(nn.Conv2d):
 
 
 class Conv3x3GNReLU(nn.Module):
-    def __init__(self, in_channels, out_channels, weight_std=False, upsample=False):
+    def __init__(self, in_channels, out_channels, weight_std=False, upsample=False, activation='relu'):
 
         if weight_std:
             Conv2d = Conv2dWS
         else:
             Conv2d = nn.Conv2d
+
+        if activation == 'relu':
+            relu_fn = nn.ReLU(inplace=True)
+        elif activation == 'swish':
+            relu_fn = Swish()
+        else:
+            raise ValueError(f'`activation` must be "relu" or "swish"')
 
         super().__init__()
         self.upsample = upsample
@@ -36,7 +44,7 @@ class Conv3x3GNReLU(nn.Module):
             Conv2d(in_channels, out_channels, (3, 3),
                               stride=1, padding=1, bias=False),
             nn.GroupNorm(32, out_channels),
-            nn.ReLU(inplace=True),
+            relu_fn,
         )
 
     def forward(self, x):
@@ -63,16 +71,17 @@ class FPNBlock(nn.Module):
 
 
 class SegmentationBlock(nn.Module):
-    def __init__(self, in_channels, out_channels, weight_std, n_upsamples=0):
+    def __init__(self, in_channels, out_channels, weight_std, n_upsamples=0, activation='relu'):
         super().__init__()
 
         blocks = [
-            Conv3x3GNReLU(in_channels, out_channels, upsample=bool(n_upsamples))
+            Conv3x3GNReLU(in_channels, out_channels, upsample=bool(n_upsamples), activation=activation)
         ]
 
         if n_upsamples > 1:
             for _ in range(1, n_upsamples):
-                blocks.append(Conv3x3GNReLU(out_channels, out_channels, weight_std, upsample=True))
+                blocks.append(Conv3x3GNReLU(
+                    out_channels, out_channels, weight_std, upsample=True, activation=activation))
 
         self.block = nn.Sequential(*blocks)
 
@@ -91,7 +100,8 @@ class FPNDecoder(Model):
             final_channels=1,
             dropout=0.2,
             weight_std=False,
-            merge_policy='add'
+            merge_policy='add',
+            activation='relu'
     ):
         super().__init__()
 
@@ -106,10 +116,10 @@ class FPNDecoder(Model):
         self.p3 = FPNBlock(pyramid_channels, encoder_channels[2])
         self.p2 = FPNBlock(pyramid_channels, encoder_channels[3])
 
-        self.s5 = SegmentationBlock(pyramid_channels, segmentation_channels, weight_std, n_upsamples=3)
-        self.s4 = SegmentationBlock(pyramid_channels, segmentation_channels, weight_std, n_upsamples=2)
-        self.s3 = SegmentationBlock(pyramid_channels, segmentation_channels, weight_std, n_upsamples=1)
-        self.s2 = SegmentationBlock(pyramid_channels, segmentation_channels, weight_std, n_upsamples=0)
+        self.s5 = SegmentationBlock(pyramid_channels, segmentation_channels, weight_std, 3, activation)
+        self.s4 = SegmentationBlock(pyramid_channels, segmentation_channels, weight_std, 2, activation)
+        self.s3 = SegmentationBlock(pyramid_channels, segmentation_channels, weight_std, 1, activation)
+        self.s2 = SegmentationBlock(pyramid_channels, segmentation_channels, weight_std, 0, activation)
 
         self.dropout = nn.Dropout2d(p=dropout, inplace=True)
 

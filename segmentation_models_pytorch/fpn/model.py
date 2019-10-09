@@ -30,13 +30,14 @@ class FPN(EncoderDecoder):
             encoder_weights='imagenet',
             decoder_pyramid_channels=256,
             decoder_segmentation_channels=128,
+            decoder_merge_policy='add',
+            decoder_activation='relu',
             classes=1,
             dropout=0.2,
             activation='sigmoid',
             in_channels=3,
             weight_std=False,
             final_upsampling=4,
-            decoder_merge_policy='add'
     ):
         encoder = get_encoder(
             encoder_name,
@@ -52,7 +53,8 @@ class FPN(EncoderDecoder):
             dropout=dropout,
             weight_std=weight_std,
             final_upsampling=4,
-            decoder_merge_policy='add'
+            merge_policy=decoder_merge_policy,
+            activation=decoder_activation
         )
 
         super().__init__(encoder, decoder, activation)
