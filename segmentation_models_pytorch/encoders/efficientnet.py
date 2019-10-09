@@ -439,7 +439,7 @@ GlobalParams.__new__.__defaults__ = (None,) * len(GlobalParams._fields)
 BlockArgs.__new__.__defaults__ = (None,) * len(BlockArgs._fields)
 
 
-def relu_fn = Swish()
+relu_fn = Swish()
 
 
 def round_filters(filters, global_params):
