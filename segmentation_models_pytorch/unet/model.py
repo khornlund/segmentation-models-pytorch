@@ -39,7 +39,8 @@ class Unet(EncoderDecoder):
             center=False,  # usefull for VGG models
             attention_type=None,
             in_channels=3,
-            dropout=0
+            dropout=0,
+            weight_std=False
     ):
         encoder = get_encoder(
             encoder_name,
@@ -54,7 +55,8 @@ class Unet(EncoderDecoder):
             use_batchnorm=decoder_use_batchnorm,
             center=center,
             attention_type=attention_type,
-            dropout=dropout
+            dropout=dropout,
+            weight_std=weight_std
         )
 
         super().__init__(encoder, decoder, activation)
