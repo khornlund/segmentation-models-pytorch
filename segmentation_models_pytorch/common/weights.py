@@ -2,6 +2,17 @@ import torch
 import torch.nn as nn
 
 
+def select_rgb_weights(weights, rgb_str):
+    """Repeat RGB weights given a str eg. RRGGBB would repeat each weight twice"""
+    rgb_str = rgb_str.lower()
+    rgb_map = {'r': 0, 'g': 1, 'b': 2}
+    slices = [(rgb_map[c] % 3, rgb_map[c] % 3 + 1) for c in rgb_str]  # slice a:a+1 to keep dims
+    new_weights = torch.cat([
+        weights[:, a:b, :, :] for a, b in slices
+    ], dim=1)
+    return new_weights
+
+
 def cycle_rgb_weights(weights, n):
     """Repeat RGB weights n times. Assumes channels are dim 1"""
     slices = [(c % 3, c % 3 + 1) for c in range(n)]  # slice a:a+1 to keep dims

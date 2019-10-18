@@ -28,6 +28,24 @@ class DeepLabV3(nn.Module):
 
         self.name = 'u-{}'.format(encoder_name)
 
+    def forward(self, x):
+        input_shape = x.shape[-2:]
+        # contract: features is a dict of tensors
+        features = self.encoder(x)
+
+        result = OrderedDict()
+        x = features["out"]
+        x = self.decoder.classifier(x)
+        x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=False)
+        result["out"] = x
+
+        x = features["aux"]
+        x = self.decoder.aux_classifier(x)
+        x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=False)
+        result["aux"] = x
+
+        return result
+
 
 class Decoder(nn.Module):
 

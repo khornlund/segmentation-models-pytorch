@@ -9,7 +9,7 @@ from torch import nn
 from torch.nn import functional as F
 from torch.utils import model_zoo
 
-from segmentation_models_pytorch.common.weights import cycle_rgb_weights
+from segmentation_models_pytorch.common.weights import select_rgb_weights
 from segmentation_models_pytorch.common.activations import Swish
 
 class EfficientNetEncoder(nn.Module):
@@ -31,7 +31,8 @@ class EfficientNetEncoder(nn.Module):
         self._global_params = get_global_params(width_coeff, depth_coeff, image_size,
                                                 dropout_rate, drop_connect_rate)
         self.block_chunks = block_chunks
-        self.in_channels = in_channels
+        self.in_channels = in_channels if isinstance(in_channels, int) else len(in_channels)
+        self.rgb_channels = in_channels if isinstance(in_channels, str) else 'rgb'
 
         # Get static or dynamic convolution depending on image size
         Conv2d = get_same_padding_conv2d(image_size=self._global_params.image_size)
@@ -96,13 +97,12 @@ class EfficientNetEncoder(nn.Module):
         state_dict.pop('_fc.weight')
 
         if self.in_channels != 3:
-            state_dict = self.modify_in_channel_weights(state_dict, self.in_channels)
-
+            state_dict = self.modify_in_channel_weights(state_dict, self.rgb_channels)
         super().load_state_dict(state_dict, **kwargs)
 
-    def modify_in_channel_weights(self, state_dict, in_channels):
+    def modify_in_channel_weights(self, state_dict, rgb_channels):
         pretrained = state_dict['_conv_stem.weight']
-        cycled_weights = cycle_rgb_weights(pretrained, in_channels)
+        cycled_weights = select_rgb_weights(pretrained, rgb_channels)
         state_dict['_conv_stem.weight'] = cycled_weights
         return state_dict
 
