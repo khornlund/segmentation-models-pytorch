@@ -303,7 +303,6 @@ class PNASNet5LargeEncoder(nn.Module):
         super().__init__()
         self.in_channels = in_channels if isinstance(in_channels, int) else len(in_channels)
         self.rgb_channels = in_channels if isinstance(in_channels, str) else 'rgb'
-        print(self.in_channels, self.rgb_channels)
         self.conv_0 = nn.Sequential(OrderedDict([
             ('conv', nn.Conv2d(self.in_channels, 96, kernel_size=3, stride=2,
                                bias=False, padding=(padding, padding))),
@@ -372,8 +371,6 @@ class PNASNet5LargeEncoder(nn.Module):
         x_cell_10 = self.cell_10(x_cell_8, x_cell_9)
         x_cell_11 = self.cell_11(x_cell_9, x_cell_10)
         skips.append(x_cell_11)
-        for x in skips:
-            print(x.size())
         return list(reversed(skips))
 
     def load_state_dict(self, state_dict, **kwargs):
