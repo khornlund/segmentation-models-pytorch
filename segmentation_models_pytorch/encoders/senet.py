@@ -5,7 +5,7 @@ from pretrainedmodels.models.senet import SEResNetBottleneck
 from pretrainedmodels.models.senet import SEResNeXtBottleneck
 from pretrainedmodels.models.senet import pretrained_settings
 
-from ..common.weights import cycle_rgb_weights
+from ..common.weights import select_rgb_weights
 
 
 class SENetEncoder(SENet):
@@ -13,7 +13,8 @@ class SENetEncoder(SENet):
     def __init__(self, in_channels=3, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.pretrained = False
-        self.in_channels = in_channels
+        self.in_channels = in_channels if isinstance(in_channels, int) else len(in_channels)
+        self.rgb_channels = in_channels if isinstance(in_channels, str) else 'rgb'
 
         del self.last_linear
         del self.avg_pool
@@ -37,14 +38,14 @@ class SENetEncoder(SENet):
         state_dict.pop('last_linear.weight')
 
         if self.in_channels != 3:
-            state_dict = self.modify_in_channel_weights(state_dict, self.in_channels)
+            state_dict = self.modify_in_channel_weights(state_dict, self.rgb_channels)
 
         super().load_state_dict(state_dict, **kwargs)
 
-    def modify_in_channel_weights(self, state_dict, in_channels):
-        self.layer0[0] = nn.Conv2d(in_channels, 64, (7, 7), (2, 2), (3, 3), bias=False)
+    def modify_in_channel_weights(self, state_dict, rgb_channels):
+        self.layer0[0] = nn.Conv2d(len(rgb_channels), 64, (7, 7), (2, 2), (3, 3), bias=False)
         pretrained = state_dict['layer0.conv1.weight']
-        cycled_weights = cycle_rgb_weights(pretrained, in_channels)
+        cycled_weights = select_rgb_weights(pretrained, rgb_channels)
         state_dict['layer0.conv1.weight'] = cycled_weights
         return state_dict
 
