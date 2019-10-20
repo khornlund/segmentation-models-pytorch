@@ -34,9 +34,9 @@ class UnetNested(EncoderDecoder):
             encoder_weights='imagenet',
             classes=1,
             activation='sigmoid',
+            decoder_channels=(64, 128, 256, 512),
             deep_supervision=False,
-            in_channels=3,
-            dropout=0,
+            in_channels=3
     ):
         encoder = get_encoder(
             encoder_name,
@@ -48,7 +48,7 @@ class UnetNested(EncoderDecoder):
             encoder_channels=encoder.out_shapes,
             out_ch=classes,
             deep_supervision=deep_supervision,
-            dropout=dropout,
+            decoder_channels=decoder_channels
         )
 
         super().__init__(encoder, decoder, activation)
