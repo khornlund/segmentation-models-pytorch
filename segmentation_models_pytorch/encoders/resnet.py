@@ -38,7 +38,7 @@ class ResNetEncoder(ResNet):
         super().load_state_dict(state_dict, **kwargs)
 
     def modify_in_channel_weights(self, state_dict, rgb_channels):
-        self.conv1 = nn.Conv2d(in_channels, 64, (7, 7), (2, 2), (3, 3), bias=False)
+        self.conv1 = nn.Conv2d(self.in_channels, 64, (7, 7), (2, 2), (3, 3), bias=False)
         pretrained = state_dict['conv1.weight']
         cycled_weights = select_rgb_weights(pretrained, rgb_channels)
         state_dict['conv1.weight'] = cycled_weights

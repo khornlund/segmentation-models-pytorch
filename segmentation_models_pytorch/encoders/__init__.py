@@ -9,6 +9,7 @@ from .densenet import densenet_encoders
 from .inceptionresnetv2 import inception_encoders
 from .efficientnet import efficientnet_encoders
 from .pnasnet import pnasnet_encoders
+from .res2net import res2net_encoders
 
 from ._preprocessing import preprocess_input
 
@@ -21,6 +22,7 @@ encoders.update(densenet_encoders)
 encoders.update(inception_encoders)
 encoders.update(efficientnet_encoders)
 encoders.update(pnasnet_encoders)
+encoders.update(res2net_encoders)
 
 
 def get_encoder(name, encoder_weights=None, in_channels=3):
