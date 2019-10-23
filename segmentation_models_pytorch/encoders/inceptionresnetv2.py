@@ -2,12 +2,15 @@ import torch.nn as nn
 from pretrainedmodels.models.inceptionresnetv2 import InceptionResNetV2
 from pretrainedmodels.models.inceptionresnetv2 import pretrained_settings
 
+from segmentation_models_pytorch.common.weights import select_rgb_weights
+
 
 class InceptionResNetV2Encoder(InceptionResNetV2):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, in_channels=3, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
+        self.in_channels = in_channels if isinstance(in_channels, int) else len(in_channels)
+        self.rgb_channels = in_channels if isinstance(in_channels, str) else 'rgb'
         self.pretrained = False
 
         # correct paddings
@@ -54,7 +57,16 @@ class InceptionResNetV2Encoder(InceptionResNetV2):
     def load_state_dict(self, state_dict, **kwargs):
         state_dict.pop('last_linear.bias')
         state_dict.pop('last_linear.weight')
+        if self.in_channels != 3:
+            state_dict = self.modify_in_channel_weights(state_dict, self.rgb_channels)
         super().load_state_dict(state_dict, **kwargs)
+
+    def modify_in_channel_weights(self, state_dict, rgb_channels):
+        self.conv2d_1a.conv = nn.Conv2d(self.in_channels, 32, (3, 3), (2, 2), (1, 1), bias=False)
+        pretrained = state_dict['conv2d_1a.conv.weight']
+        cycled_weights = select_rgb_weights(pretrained, rgb_channels)
+        state_dict['conv2d_1a.conv.weight'] = cycled_weights
+        return state_dict
 
 
 inception_encoders = {

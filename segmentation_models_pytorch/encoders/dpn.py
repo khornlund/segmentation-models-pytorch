@@ -1,19 +1,24 @@
 import numpy as np
 
 import torch
+import torch.nn as nn
 import torch.nn.functional as F
 
 from pretrainedmodels.models.dpn import DPN
 from pretrainedmodels.models.dpn import pretrained_settings
 
+from segmentation_models_pytorch.common.weights import select_rgb_weights
+
 
 class DPNEncorder(DPN):
 
-    def __init__(self, feature_blocks, *args, **kwargs):
+    def __init__(self, in_channels, feature_blocks, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.in_channels = in_channels if isinstance(in_channels, int) else len(in_channels)
+        self.rgb_channels = in_channels if isinstance(in_channels, str) else 'rgb'
         self.feature_blocks = np.cumsum(feature_blocks)
         self.pretrained = False
-        
+
         del self.last_linear
 
     def forward(self, x):
@@ -47,7 +52,17 @@ class DPNEncorder(DPN):
     def load_state_dict(self, state_dict, **kwargs):
         state_dict.pop('last_linear.bias')
         state_dict.pop('last_linear.weight')
+        if self.in_channels != 3:
+            state_dict = self.modify_in_channel_weights(state_dict, self.rgb_channels)
         super().load_state_dict(state_dict, **kwargs)
+
+    def modify_in_channel_weights(self, state_dict, rgb_channels):
+        self.features.conv1_1.conv = nn.Conv2d(
+            self.in_channels, 128, (7, 7), (2, 2), (3, 3), bias=False)
+        pretrained = state_dict['features.conv1_1.conv.weight']
+        cycled_weights = select_rgb_weights(pretrained, rgb_channels)
+        state_dict['features.conv1_1.conv.weight'] = cycled_weights
+        return state_dict
 
 
 dpn_encoders = {
