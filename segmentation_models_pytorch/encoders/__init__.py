@@ -2,6 +2,7 @@ import functools
 import torch.utils.model_zoo as model_zoo
 
 from .resnet import resnet_encoders
+from .resnet_dilated import resnet_dilated_encoders
 from .dpn import dpn_encoders
 from .vgg import vgg_encoders
 from .senet import senet_encoders
@@ -16,6 +17,7 @@ from ._preprocessing import preprocess_input
 
 encoders = {}
 encoders.update(resnet_encoders)
+encoders.update(resnet_dilated_encoders)
 encoders.update(dpn_encoders)
 encoders.update(vgg_encoders)
 encoders.update(senet_encoders)
@@ -34,7 +36,8 @@ def get_encoder(name, encoder_weights=None, in_channels=3):
 
     if encoder_weights is not None:
         settings = encoders[name]['pretrained_settings'][encoder_weights]
-        r = encoder.load_state_dict(model_zoo.load_url(settings['url']))
+        state_dict = model_zoo.load_url(settings['url'])
+        r = encoder.load_state_dict(state_dict)
         print(f'Load result: {r}')
     return encoder
 
