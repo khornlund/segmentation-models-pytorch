@@ -38,11 +38,13 @@ class PSPNet(EncoderDecoder):
             psp_aux_output=False,
             classes=21,
             dropout=0.2,
-            activation='softmax'
+            activation='softmax',
+            in_channels=3,
     ):
         encoder = get_encoder(
             encoder_name,
-            encoder_weights=encoder_weights
+            encoder_weights=encoder_weights,
+            in_channels=in_channels
         )
 
         decoder = PSPDecoder(
