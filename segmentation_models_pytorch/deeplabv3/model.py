@@ -14,19 +14,21 @@ class DeepLabV3(nn.Module):
         in_channels=3,
     ):
         super().__init__()
-        model = torch.hub.load('pytorch/vision', encoder_name, pretrained=pretrained)
+        self.in_channels = in_channels if isinstance(in_channels, int) else len(in_channels)
+        self.rgb_channels = in_channels if isinstance(in_channels, str) else 'rgb'
 
+        model = torch.hub.load('pytorch/vision', encoder_name, pretrained=pretrained)
         self.encoder = model.backbone
 
         # change input channels
-        new_conv = nn.Conv2d(in_channels, 64, (7, 7), (2, 2), (3, 3), bias=False)
-        transfer_weights(self.encoder.conv1, new_conv, method='cycle')
-        self.encoder.conv1 = new_conv
+        if self.in_channels != 3:
+            new_conv = nn.Conv2d(self.in_channels, 64, (7, 7), (2, 2), (3, 3), bias=False)
+            transfer_weights(self.encoder.conv1, new_conv, method='cycle')
+            self.encoder.conv1 = new_conv
 
         # change output channels
         self.decoder = Decoder(model.classifier, classes)
-
-        self.name = 'u-{}'.format(encoder_name)
+        self.name = 'deeplabv3-{}'.format(encoder_name)
 
     def forward(self, x):
         input_shape = x.shape[-2:]
