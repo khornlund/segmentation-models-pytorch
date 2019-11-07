@@ -10,7 +10,7 @@ class DeepLabV3(nn.Module):
     def __init__(
         self,
         encoder_name='deeplabv3_resnet101',
-        pretrained=False,
+        pretrained=True,
         classes=1,
         in_channels=3,
     ):
