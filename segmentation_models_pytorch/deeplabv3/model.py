@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 from ..common.weights import transfer_weights
 
@@ -32,21 +33,12 @@ class DeepLabV3(nn.Module):
 
     def forward(self, x):
         input_shape = x.shape[-2:]
-        # contract: features is a dict of tensors
-        features = self.encoder(x)
+        features = self.encoder(x)  # contract: features is a dict of tensors
 
-        result = OrderedDict()
         x = features["out"]
-        x = self.decoder.classifier(x)
+        x = self.decoder(x)
         x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=False)
-        result["out"] = x
-
-        x = features["aux"]
-        x = self.decoder.aux_classifier(x)
-        x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=False)
-        result["aux"] = x
-
-        return result
+        return x
 
 
 class Decoder(nn.Module):
@@ -54,23 +46,8 @@ class Decoder(nn.Module):
     def __init__(self, classifier, classes):
         super().__init__()
         self.classifier = classifier
-        self.aux_classifier = FCNHead(classifier[-1].out_channels, classes)
+        self.classifier[4] = nn.Conv2d(256, classes, kernel_size=(1, 1), stride=(1, 1))
 
     def forward(self, x):
         x = self.classifier(x)
-        x = self.aux_classifier(x)
         return x
-
-
-class FCNHead(nn.Sequential):
-    def __init__(self, in_channels, channels):
-        inter_channels = in_channels // 4
-        layers = [
-            nn.Conv2d(in_channels, inter_channels, 3, padding=1, bias=False),
-            nn.BatchNorm2d(inter_channels),
-            nn.ReLU(),
-            nn.Dropout(0.1),
-            nn.Conv2d(inter_channels, channels, 1)
-        ]
-
-        super(FCNHead, self).__init__(*layers)
