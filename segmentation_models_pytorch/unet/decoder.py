@@ -88,7 +88,7 @@ class UnetDecoder(Model):
         self.layer5 = DecoderBlock(in_channels[4], out_channels[4],
                                    use_batchnorm, attention_type, weight_std)
         self.final_conv = nn.Conv2d(out_channels[4], final_channels, kernel_size=(1, 1))
-        # self.dropout = nn.Dropout(p=dropout)
+        self.dropout = nn.Dropout(p=dropout)
         self.initialize()
 
     def compute_channels(self, encoder_channels, decoder_channels):
@@ -111,9 +111,11 @@ class UnetDecoder(Model):
         x = self.layer1([encoder_head, skips[0]])
         x = self.layer2([x, skips[1]])
         x = self.layer3([x, skips[2]])
+        x = self.dropout(x)
         x = self.layer4([x, skips[3]])
+        x = self.dropout(x)
         x = self.layer5([x, None])
-        # x = self.dropout(x)
+        x = self.dropout(x)
         x = self.final_conv(x)
 
         return x
