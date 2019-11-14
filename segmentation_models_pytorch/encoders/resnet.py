@@ -138,7 +138,25 @@ resnet_encoders = {
                 'mean': [0.485, 0.456, 0.406],
                 'std': [0.229, 0.224, 0.225],
                 'num_classes': 1000
-            }
+            },
+            'ssl_yfcc100m': {
+                'url': 'https://dl.fbaipublicfiles.com/semiweaksupervision/model_files/semi_supervised_resnext101_32x8-2cfe2f8b.pth',
+                'input_space': 'RGB',
+                'input_size': [3, 224, 224],
+                'input_range': [0, 1],
+                'mean': [0.485, 0.456, 0.406],
+                'std': [0.229, 0.224, 0.225],
+                'num_classes': 1000
+            },
+            'swsl_yfcc100m': {
+                'url': 'https://dl.fbaipublicfiles.com/semiweaksupervision/model_files/semi_weakly_supervised_resnext101_32x8-b4712904.pth',
+                'input_space': 'RGB',
+                'input_size': [3, 224, 224],
+                'input_range': [0, 1],
+                'mean': [0.485, 0.456, 0.406],
+                'std': [0.229, 0.224, 0.225],
+                'num_classes': 1000
+            },
         },
         'out_shapes': (2048, 1024, 512, 256, 64),
         'params': {

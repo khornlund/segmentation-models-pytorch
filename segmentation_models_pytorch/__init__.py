@@ -5,6 +5,8 @@ from .fpn import FPN
 from .pspnet import PSPNet
 from .deeplabv3 import DeepLabV3
 from .panet import PANet
+from .refinenet import RefineNet, LightWeightRefineNet, LightWeightRefineNetV2
+from .jpnet import JPN
 
 from . import encoders
 from . import utils
