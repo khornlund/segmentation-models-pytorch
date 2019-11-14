@@ -55,8 +55,12 @@ class InceptionResNetV2Encoder(InceptionResNetV2):
         return features
 
     def load_state_dict(self, state_dict, **kwargs):
-        state_dict.pop('last_linear.bias')
-        state_dict.pop('last_linear.weight')
+        if 'last_linear.bias' in state_dict.keys():
+            state_dict.pop('last_linear.bias')
+            state_dict.pop('last_linear.weight')
+        elif 'classif.bias' in state_dict.keys():
+            state_dict.pop('classif.bias')
+            state_dict.pop('classif.weight')
         if self.in_channels != 3:
             state_dict = self.modify_in_channel_weights(state_dict, self.rgb_channels)
         super().load_state_dict(state_dict, **kwargs)
