@@ -72,7 +72,18 @@ class InceptionResNetV2Encoder(InceptionResNetV2):
 inception_encoders = {
     'inceptionresnetv2': {
         'encoder': InceptionResNetV2Encoder,
-        'pretrained_settings': pretrained_settings['inceptionresnetv2'],
+        'pretrained_settings': {
+            'ens_adv': {
+                'url': 'https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-weights/ens_adv_inception_resnet_v2-2592a550.pth',
+                'input_space': 'RGB',
+                'input_size': [3, 299, 299],
+                'input_range': [0, 1],
+                'mean': [0.5, 0.5, 0.5],
+                'std': [0.5, 0.5, 0.5],
+                'num_classes': 1000
+            },
+            **pretrained_settings['inceptionresnetv2'],
+        },
         'out_shapes': (1536, 1088, 320, 192, 64),
         'params': {
             'num_classes': 1000,
