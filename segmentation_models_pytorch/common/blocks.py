@@ -2,7 +2,6 @@ from collections.abc import Sequence
 
 import torch.nn as nn
 import torch.nn.functional as F
-from inplace_abn import InPlaceABN
 
 
 class SeparableConv2d(nn.Module):
