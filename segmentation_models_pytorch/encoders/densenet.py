@@ -7,7 +7,7 @@ from torchvision.models.densenet import DenseNet
 
 class DenseNetEncoder(DenseNet):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, in_channels, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.pretrained = False
         del self.classifier
